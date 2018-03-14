@@ -7,10 +7,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start-client": "babel-node ./src/index.js",
-    "start-oracle": "babel-node ./src/oracle-service.js",
+    "start": "babel-node ./src/index.js",
+    "oracle": "babel-node ./src/oracle-service.js",
     "rpc": "truffle develop",
-    "migrate": "truffle compile && truffle migrate"
+    "migrate": "truffle compile && truffle migrate --reset"
   },
   "dependencies": {
     "axios": "^0.18.0",

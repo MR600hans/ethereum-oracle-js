@@ -1,12 +1,12 @@
-import OracleContract from './../build/contracts/Oracle.json'
-import Web3 from 'web3'
+import OracleContract from './oracle-contract.js'
 import axios from 'axios'
-import contract from 'truffle-contract'
 
-class OracleService {
+class OracleService extends OracleContract {
   constructor() {
+    super()
+
     this.web3 = this.setWeb3()
-    this.contract = this.setContract()
+    this.contract = this.setContract(this.web3)
 
     this.price = {
       btc: 0
@@ -15,17 +15,24 @@ class OracleService {
     this.oracleWatcher()
   }
 
+  // Load Watcher
   oracleWatcher() {
     this.web3.eth.getAccounts((err, [account]) => {
       this.contract.deployed()
         .then((instance) => {
           instance.CallbackUpdateBTCPrice().watch(async (err, event) => {
+            // Get Price from API
             const data = await this.getBTCPrice()
+
+            // Oracle Cache
             this.price.btc = (data.length > 0) ? data[0].price_usd*100 : this.price.btc
 
+            // Comment out line below if you don't want to store
+            // the data on the smart contract (Save storage cost on Oracle point)
             await instance.setBTCPrice(this.price.btc, { from: account })
-            await instance.priceUpdated({from: account})
-            
+
+            // Send API though event
+            await instance.sendBTCPrice(this.price.btc, { from: account })
             console.log('BTC price update requested:', this.price.btc/100)
           })
         })
@@ -33,21 +40,11 @@ class OracleService {
     })
   }
 
+  // Get BTC price from API
   getBTCPrice() {
     return axios.get('https://api.coinmarketcap.com/v1/ticker/bitcoin/').then((res) => res.data)
-  }
-
-  setContract() {
-    const oracleContract = contract(OracleContract)
-    oracleContract.setProvider(this.web3.currentProvider)
-
-    return oracleContract
-  }
-
-  setWeb3() {
-    return new Web3(new Web3.providers.HttpProvider('http://localhost:9545'))
   }
 }
 
 const oracle = new OracleService()
-oracle.getBTCPrice()
+console.log('Oracle started!')
