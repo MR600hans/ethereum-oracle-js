@@ -11,12 +11,15 @@ class ClientToOracleService {
   }
 
   getBTCPrice() {
-    this.web3.eth.getAccounts((err, [account]) => {
+    this.web3.eth.getAccounts((err, [,account]) => {
       this.contract.deployed()
         .then(async (instance) => {
           const update = await instance.updateBTCPrice({from: account})
-          const price = await instance.getBTCPrice({from: account})
-          console.log('BTC current price:', parseFloat(price.c[0] / 100))
+          const watcher = instance.CallbackPriceUpdated().watch(async (err, event) => {
+            const price = await instance.getBTCPrice({from: account})
+            console.log('BTC current price:', parseFloat(price.c[0] / 100))
+            watcher.stopWatching()
+          })
         })
         .catch(err => console.log)
     })

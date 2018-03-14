@@ -6,6 +6,7 @@ contract Oracle {
   uint public btcPrice;
 
   event CallbackUpdateBTCPrice();
+  event CallbackPriceUpdated();
 
   function Oracle() public {
     owner = msg.sender;
@@ -15,8 +16,12 @@ contract Oracle {
     CallbackUpdateBTCPrice();
   }
 
+  function priceUpdated() public {
+    CallbackPriceUpdated();
+  }
+
   function setBTCPrice(uint _price) public {
-    /* require(msg.sender == owner); */
+    require(msg.sender == owner);
     btcPrice = _price;
   }
 

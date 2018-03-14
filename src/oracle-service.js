@@ -22,7 +22,10 @@ class OracleService {
           instance.CallbackUpdateBTCPrice().watch(async (err, event) => {
             const data = await this.getBTCPrice()
             this.price.btc = (data.length > 0) ? data[0].price_usd*100 : this.price.btc
-            instance.setBTCPrice(this.price.btc, { from: account })
+
+            await instance.setBTCPrice(this.price.btc, { from: account })
+            await instance.priceUpdated({from: account})
+            
             console.log('BTC price update requested:', this.price.btc/100)
           })
         })
